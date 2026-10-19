@@ -1,0 +1,60 @@
+{
+  "name": "dsh-chat-figure",
+  "version": "0.1.0",
+  "description": "DSH 聊天内原生图解渲染：把 ```figure 代码块里的声明式描述渲染成随主题自适应的 HTML 图，用于边讲边画。",
+  "license": "MIT",
+  "author": "Wh1stle05",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml",
+    "README.md",
+    "docs"
+  ],
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "dsh-web",
+    "diagram",
+    "figure",
+    "mindmap",
+    "teaching",
+    "markdown",
+    "图解",
+    "插件"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Wh1stle05/dsh-chat-figure.git"
+  },
+  "homepage": "https://github.com/Wh1stle05/dsh-chat-figure#readme",
+  "bugs": {
+    "url": "https://github.com/Wh1stle05/dsh-chat-figure/issues"
+  },
+  "scripts": {
+    "test": "NODE_PATH=node_modules node smoke/smoke.mjs"
+  },
+  "devDependencies": {
+    "jsdom": "^27.0.0"
+  },
+  "dependencies": {
+    "jsdom": "^30.1.3"
+  }
+}

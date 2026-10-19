@@ -1,0 +1,5 @@
+# dsh-chat-figure — insert one loader entry. The browser half is discovered by
+# dsh-client-modules through the package's dsh.client declaration.
+- insert:
+    - id: chat-figure
+      name: 'dsh-chat-figure'
