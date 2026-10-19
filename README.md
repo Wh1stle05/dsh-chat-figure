@@ -8,7 +8,7 @@
 - 文字是真文字：跟随聊天字号、可选中、可缩放，随主题明暗自动适配
 - 零依赖：不需要 Mermaid，不加载外部脚本
 - 会话流式输出时边到边渲染
-- 三种块：流程图（figure）、层级树（tree）、可点击作答的选择题（quiz）
+- 三种块：流程图（figure）、层级树（tree）、可作答的选择题（quiz，一次一题或整卷）
 
 <details>
 <summary>深色主题</summary>
@@ -42,28 +42,46 @@ Bash (Shell)
 
 缩进两格一层；`标题 | 备注` 里的备注会以灰色小字跟在后面；有子节点的行自动加粗。
 
-### `%%quiz` — 选择题，点一下就判
+### `%%quiz` — 选择题，一次一题
 
-![选择题](docs/preview-quiz.png)
+![一次一题](docs/preview-quiz-step.png)
 
 ```quiz
 %%quiz
-title: 第 1 课 · 进程基础
-q: 子进程调用 execve() 之后，PID 会怎样？
-A. 变成一个新的 PID
-B. 保持不变
-C. 变成父进程 PID
-D. 自动变成 1
+tag: Linux 小测验
+q: Linux 中，kill -9 发送的是什么信号？
+A. SIGTERM (15)
+B. SIGKILL (9)
+C. SIGSTOP (19)
+D. SIGINT (2)
 answer: B
-why: execve 只替换进程映像；只有 fork 才会分配新 PID。
+why: -9 就是 SIGKILL，内核直接终止，进程既不能捕获也不能忽略。
+q: 想让进程「先保存状态再退出」，应该发哪个信号？
+A. SIGKILL
+B. SIGSTOP
+C. SIGTERM
+answer: C
+why: SIGTERM 可被捕获，进程能关连接、刷缓冲。
 ```
 
-- 点选项立即判定：正确项绿、错选项红、附解析；
-- 底部显示「已答 x/y · 答对 n」，可「重做」，也可「复制结果」贴回对话；
-- 作答记录存在 `localStorage`（按内容哈希分键），刷新页面不丢。
+- 顶部是标签（`tag:`）+ `第 n / N 题`，下面是进度条；
+- 选项是单选，点「提交答案」才判分，判完显示对错和解析，按钮变成「下一题」；
+- 最后一题之后是成绩页：答对 x/N、逐题回顾、重做、复制结果。
+
+![判分与解析](docs/preview-quiz-feedback.png)
+
+想要一次性看到全部题目，加一行 `mode: list`：
+
+```quiz
+%%quiz
+mode: list
+q: ...
+```
 
 关键字：`q:`/`问题:` 开新题，`A.`~`H.` 是选项，`answer:`/`答案:` 是正确项，
-`why:`/`解析:` 是解释，`title:` 是卡片标题。
+`why:`/`解析:` 是解释，`tag:`/`title:` 是卡片标题，`mode:` 取 `step`（默认）或 `list`。
+
+作答记录存在 `localStorage`（按块内容哈希分键），刷新页面不丢；换一道题就是新键。
 
 ### `%%figure` — 流程/结构示意
 
@@ -82,7 +100,7 @@ foot: 复制的是“进程状态”，不是磁盘上的程序。
 | 行 | 含义 |
 | --- | --- |
 | `title:` / `sub:` | 图标题 / 灰色副标题（居中） |
-| `arrow: 标签` | 竖向箭头，标签可省略 |
+| `arrow: 标签` / `arrow` | 竖向箭头，标签可省略 |
 | `row` | 开始一行并列的盒子；后续 `box` 都归入这一行 |
 | `box [颜色] [wide]: 标题 \| 副标题` | 盒子；颜色 `gray` `blue` `green` `amber` `plain`（默认）；`wide` 强制整行 |
 | `note: 文字` | 居中的灰色小字 |

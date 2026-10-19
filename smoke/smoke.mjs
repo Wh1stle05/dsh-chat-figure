@@ -18,7 +18,7 @@ window.__ModuleLoader__ = {
 
 await import('../lib/client.js');
 assert.ok(plugin, 'factory should register');
-const { parseFigure, renderFigure, processPre, parseTree, renderTree, parseQuiz, renderQuiz, detectKind } = plugin.__figure;
+const { parseFigure, renderFigure, processPre, parseTree, renderTree, parseQuiz, renderQuiz, renderQuizList, renderQuizStep, detectKind } = plugin.__figure;
 
 // ---------------------------------------------------------------- parse
 const src = [
@@ -106,6 +106,10 @@ assert.equal(plain.style.display, '', 'plain code block untouched');
 assert.equal(plain.nextElementSibling, null);
 
 
+// bare arrow lines (no label) still separate rows
+const bare = parseFigure('%%figure\nbox blue: A\narrow\nbox blue: B');
+assert.deepEqual(bare.blocks.map((b) => b.type), ['row', 'arrow', 'row']);
+
 // ---------------------------------------------------------------- tree
 const treeSrc = ['%%tree', 'Bash (Shell)', '  Uvicorn 父进程', '    Worker 1', '    - Worker 2 | :8001', '# comment'].join('\n');
 const tree = parseTree(treeSrc);
@@ -142,7 +146,7 @@ assert.deepEqual(quiz.questions[0].options.map((o) => o.key), ['A', 'B']);
 assert.equal(quiz.questions[0].answerKey, 'B');
 assert.equal(quiz.questions[0].why, 'execve 只替换映像。');
 
-const quizNode = renderQuiz(document, quiz, 'test:quiz:1');
+const quizNode = renderQuizList(document, quiz, 'test:quiz:1');
 const firstOpts = quizNode.querySelectorAll('.dfq-q')[0].querySelectorAll('.dfq-opt');
 assert.equal(firstOpts.length, 2);
 firstOpts[1].click();
@@ -158,7 +162,7 @@ assert.ok(secondOpts[2].classList.contains('is-right'));
 assert.match(quizNode.querySelector('.dfq-score').textContent, /1\/2/);
 
 // answers survive a re-render (same content hash)
-const quizAgain = renderQuiz(document, quiz, 'test:quiz:1');
+const quizAgain = renderQuizList(document, quiz, 'test:quiz:1');
 assert.ok(quizAgain.querySelectorAll('.dfq-q')[0].querySelectorAll('.dfq-opt')[1].classList.contains('is-picked'));
 assert.match(quizAgain.querySelector('.dfq-score').textContent, /答完 2 题/);
 
@@ -181,5 +185,59 @@ root.appendChild(quizPre);
 processPre(document, quizPre);
 assert.equal(quizPre.style.display, 'none');
 assert.ok(quizPre.nextElementSibling.classList.contains('dfg-quiz'));
+
+
+// ---------------------------------------------------------------- quiz, step mode
+const holder = document.createElement('div');
+document.body.appendChild(holder);
+const stepKey = 'test:quiz:step:1';
+holder.appendChild(renderQuizStep(document, quiz, stepKey));
+
+let card = holder.querySelector('.dfg-quiz');
+assert.equal(card.querySelector('.dfs-count').textContent, '第 1 / 2 题');
+assert.equal(card.querySelector('.dfs-submit').textContent, '提交答案');
+card.querySelector('.dfs-submit').click();
+assert.equal(card.querySelector('.dfs-submit').textContent, '先选一个选项', 'submit nudges before a pick');
+
+card.querySelectorAll('.dfs-opt')[1].click();          // pick B (correct)
+card = holder.querySelector('.dfg-quiz');
+assert.ok(card.querySelectorAll('.dfs-opt')[1].classList.contains('is-picked'));
+
+card.querySelector('.dfs-submit').click();             // submit
+card = holder.querySelector('.dfg-quiz');
+assert.ok(card.querySelectorAll('.dfs-opt')[1].classList.contains('is-right'), 'graded green');
+assert.match(card.querySelector('.dfq-why').textContent, /答对了/);
+assert.equal(card.querySelector('.dfs-submit').textContent, '下一题');
+
+card.querySelector('.dfs-submit').click();             // next question
+card = holder.querySelector('.dfg-quiz');
+assert.equal(card.querySelector('.dfs-count').textContent, '第 2 / 2 题');
+assert.match(card.querySelector('.dfs-fill').style.width, /50%/, 'progress tracks answers');
+
+card.querySelectorAll('.dfs-opt')[0].click();          // pick A (wrong, answer is C)
+card = holder.querySelector('.dfg-quiz');
+card.querySelector('.dfs-submit').click();
+card = holder.querySelector('.dfg-quiz');
+assert.ok(card.querySelectorAll('.dfs-opt')[0].classList.contains('is-wrong'));
+assert.ok(card.querySelectorAll('.dfs-opt')[2].classList.contains('is-right'));
+assert.equal(card.querySelector('.dfs-submit').textContent, '查看结果');
+
+card.querySelector('.dfs-submit').click();             // finish
+card = holder.querySelector('.dfg-quiz');
+assert.match(card.querySelector('.dfs-score').textContent, /答对 1 \/ 2/);
+assert.equal(card.querySelectorAll('.dfs-item').length, 2);
+
+// state survives a fresh render of the same key
+const restored = renderQuizStep(document, quiz, stepKey);
+assert.match(restored.querySelector('.dfs-score').textContent, /答对 1 \/ 2/);
+
+// reset clears the record
+card.querySelector('.dfq-reset').click();
+const afterResetStep = holder.querySelector('.dfg-quiz');
+assert.equal(afterResetStep.querySelector('.dfs-count').textContent, '第 1 / 2 题');
+
+// list mode is still available on demand
+assert.equal(renderQuiz(document, quiz, 'k').className.includes('dfq-step'), true);
+assert.equal(renderQuiz(document, { ...quiz, mode: 'list' }, 'k').className.includes('dfq-step'), false);
 
 console.log('smoke: all assertions passed');
