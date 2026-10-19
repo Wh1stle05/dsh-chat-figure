@@ -1,7 +1,7 @@
 {
   "name": "dsh-chat-figure",
   "version": "0.2.0",
-  "description": "DSH 聊天内原生图解渲染：把 ```figure 代码块里的声明式描述渲染成随主题自适应的 HTML 图，用于边讲边画。",
+  "description": "DSH 聊天内原生图解与练习 / native in-chat diagrams and quizzes for DeepSeek Harness：把 ```figure / ```tree / ```quiz 代码块渲染成随主题自适应的 HTML，不用图片也不用 Mermaid",
   "license": "MIT",
   "author": "Wh1stle05",
   "type": "module",
@@ -16,6 +16,8 @@
     "lib/client.js",
     "cordis.patch.yml",
     "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
     "docs"
   ],
   "dsh": {
