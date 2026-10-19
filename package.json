@@ -1,6 +1,6 @@
 {
   "name": "dsh-chat-figure",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "DSH 聊天内原生图解渲染：把 ```figure 代码块里的声明式描述渲染成随主题自适应的 HTML 图，用于边讲边画。",
   "license": "MIT",
   "author": "Wh1stle05",

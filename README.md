@@ -150,6 +150,13 @@ ln -s /home/a3165/workspace/dsh-chat-figure ~/.dsh/profiles/web/node_modules/dsh
 - jsdom 冒烟测试：解析、渲染、幂等、流式半截内容、shiki 行结构、无关代码块不受影响
 - 真实应用外壳（headless Chromium + 独立实例）：浅色/深色主题都正常渲染，见 `docs/preview-*.png`
 
+## 样式为什么可能整体失效
+
+卡片的所有样式都来自插件注入到 `<head>` 的一个 `<style>`。宿主在切换主题时会重写
+`<head>`，不认识的节点会被删掉，于是卡片变成浏览器默认样式（无边框、选项挤成一行）。
+插件的 `scan()` 每次都会 `injectStyle()` 续上，所以只要页面上再有任何一次 DOM 变化就会自愈。
+排查时可以在控制台执行 `document.getElementById('dsh-chat-figure-style')` 确认样式表在不在。
+
 ## 已知限制
 
 - 靠 `pre` 元素文本里的 `%%…` 哨兵识别，不依赖代码块的 class，代码块组件改样式也不会失效；
